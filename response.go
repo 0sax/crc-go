@@ -77,7 +77,7 @@ func (r *ResponseDataPacket) GetCleanReport(bvn string) (cr *CleanedReport) {
 	return &CleanedReport{
 		BVN:     bvn,
 		NoHit:   r.ISNoHit(),
-		ID:     id,
+		ID:      id,
 		Records: records,
 	}
 }
@@ -86,8 +86,8 @@ func (r *ResponseDataPacket) GetCleanRecords() []Record {
 	b := r.Body.MortgageLoans.GetCleanRecords()
 	c := r.Body.MFBLoans.GetCleanRecords()
 
-	a = append(a,b...)
-	a = append(a,c...)
+	a = append(a, b...)
+	a = append(a, c...)
 
 	return a
 }
@@ -103,10 +103,10 @@ type ResponseType struct {
 type Body struct {
 	ErrorList        ErrorList        `xml:"ERROR-LIST"`
 	SearchResultList SearchResultList `xml:"SEARCH-RESULT-LIST"`
-	ConsumerProfile ConsumerProfile `xml:"CONSUMER_PROFILE"`
-	ConsumerLoans Loans `xml:"CONSUMER_CREDIT_FACILITY_SI"`
-	MFBLoans Loans `xml:"MFCONSUMER_CREDIT_FACILITY_SI"`
-	MortgageLoans Loans `xml:"MGCONSUMER_CREDIT_FACILITY_SI"`
+	ConsumerProfile  ConsumerProfile  `xml:"CONSUMER_PROFILE"`
+	ConsumerLoans    Loans            `xml:"CONSUMER_CREDIT_FACILITY_SI"`
+	MFBLoans         Loans            `xml:"MFCONSUMER_CREDIT_FACILITY_SI"`
+	MortgageLoans    Loans            `xml:"MGCONSUMER_CREDIT_FACILITY_SI"`
 }
 type ConsumerProfile struct {
 	ConsumerDetails ConsumerDetails `xml:"CONSUMER_DETAILS"`
@@ -119,38 +119,41 @@ type Loans struct {
 	Loans []Loan `xml:"CREDIT_DETAILS"`
 }
 
-func (l *Loans) GetCleanRecords() (crs []Record)  {
+func (l *Loans) GetCleanRecords() (crs []Record) {
 	if l == nil || l.Loans == nil || len(l.Loans) == 0 {
 		return []Record{}
 	}
 
 	for _, loan := range l.Loans {
-		if crs == nil { crs = []Record{}}
+		if crs == nil {
+			crs = []Record{}
+		}
 		crs = append(crs, loan.GetCleanRecord())
 	}
 	return
 }
+
 type Loan struct {
-	ID string  `xml:"PRIMARY_ROOT_ID"`
-	CustomerID string  `xml:"RUID"`
-	DateReported string  `xml:"REPORTED_DATE"`
-	Lender string  `xml:"PROVIDER_SOURCE"`
-	Amount string  `xml:"SANCTIONED_AMOUNT"`
-	InstalmentSize string `xml:"INSTALLMENT_AMOUNT"`
-	Balance string  `xml:"BALANCEAMOUNT"`
-	CurrentBalance string  `xml:"CURRENT_BALANCE"`
-	OverduePrincipal string  `xml:"OVER_DUE_AMT_PRICIPAL"`
-	DisbursalDate string  `xml:"FIRST_DISBURSE_DATE"`
-	MaturityDate string  `xml:"PLANNED_CLOSURE_DATE"`
-	Category string  `xml:"CATEGORY_DESC"`
-	AssetClassification string  `xml:"ASSET_CLASSIFICATION"`
-	Status string   `xml:"ACCOUNT_STATUS"`
-	BureauAccountStatus string  `xml:"BUREAU_ACC_STATUS"`
+	ID                  string `xml:"PRIMARY_ROOT_ID"`
+	CustomerID          string `xml:"RUID"`
+	DateReported        string `xml:"REPORTED_DATE"`
+	Lender              string `xml:"PROVIDER_SOURCE"`
+	Amount              string `xml:"SANCTIONED_AMOUNT"`
+	InstalmentSize      string `xml:"INSTALLMENT_AMOUNT"`
+	Balance             string `xml:"BALANCEAMOUNT"`
+	CurrentBalance      string `xml:"CURRENT_BALANCE"`
+	OverduePrincipal    string `xml:"OVER_DUE_AMT_PRICIPAL"`
+	DisbursalDate       string `xml:"FIRST_DISBURSE_DATE"`
+	MaturityDate        string `xml:"PLANNED_CLOSURE_DATE"`
+	Category            string `xml:"CATEGORY_DESC"`
+	AssetClassification string `xml:"ASSET_CLASSIFICATION"`
+	Status              string `xml:"ACCOUNT_STATUS"`
+	BureauAccountStatus string `xml:"BUREAU_ACC_STATUS"`
 	// Asset Classification
-		// CG 	& Mortgage 001,002,003,004; standard, substandard, doubtful, lost
-		// MFB 1,2,3,4,5; performing, pass and watch, substabdard, doubtful, lost
+	// CG 	& Mortgage 001,002,003,004; standard, substandard, doubtful, lost
+	// MFB 1,2,3,4,5; performing, pass and watch, substabdard, doubtful, lost
 	// Bureau Account Status
-		// 001, 002, 003, 004, 005; open, closed, freezed, inactive, memorandum
+	// 001, 002, 003, 004, 005; open, closed, freezed, inactive, memorandum
 }
 
 func (l *Loan) GetCleanRecord() Record {
@@ -164,13 +167,14 @@ func (l *Loan) GetCleanRecord() Record {
 		Classification:          l.AssetClassification,
 		DisbursalDate:           l.DisbursalDate,
 		MaturityDate:            l.MaturityDate,
-		Source:                  "CRC Consumer",
+		Source:                  "crc-full",
 		ReportDate:              l.DateReported,
 		RefreshedOn:             time.Now().Format("02-Jan-2006"),
 		BureauIdentifierEntry:   l.ID,
 		BureauIdentifierAccount: l.CustomerID,
 	}
 }
+
 type ErrorList struct {
 	ErrorCodes []string `xml:"ERROR-CODE"`
 }
